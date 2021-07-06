@@ -1,0 +1,82 @@
+
+# Platform information
+# DO NOT change the field titles (left of the :) below or the auto-validation ran after submission 
+# will fail
+platform:
+    Vendor: "CPE"
+    # Start GKE-On-Prem only
+    ESXi: "6.5.0,7967591"
+    vCenter: "6.7.0.10244857"
+    # End GKE-On-Prem only
+    Load_Balancer: "bundled"
+    Server_Model: "HPE ProLiant DL380"
+    CPU_Model: "Intel Xeon"
+    CPU_Number: "Silver 4114"
+    Total_pCore_Count: 10
+    RAM: 65536
+    Disk_Drives: "2"
+    NIC_Model: "Intel(R) Ethernet Controller X710 for 10GbE SFP+" 
+    Minimum_Number_of_Servers: 3
+    Maximum_Number_of_Servers: 32
+    Shared_Storage_Solution: "HPE Nimble Storage dHCI"
+
+
+# Anthos ready program requires us to submit supporting documents, such as network
+# physical and logical topology. Please refer to each Anthos Ready Program for
+# detail. These files will be compressed into test log tar.gz file.
+# All files listed in this section will be compressed into tar.gz file.
+documents:
+    network_physical_topology: '/home/chris/anthos-bm/network-physical.pdf'
+    network_logical_topology: '/home/chris/anthos-bm/network-logical.pdf'
+
+
+# This section is required.
+# Tool checks kubeconfig files.  If any of them does not exist, or
+# is invalid tool will exit with an error message.
+# Valid options for deployment-model are 'hybrid' (bare metal) or 'multi' (bare metal or on-prem)
+# the 'userkubeconfigs' section can be omitted if the deployment-model is 'hybrid'
+# Both kubeconfig and cluster create yaml files will be compressed into
+# test tar.gz file after sensitive data, such as password is removed.
+anthos-clusters:
+    deployment-model: hybrid
+    adminkubeconfig: '/home/chris/anthos-bm/config_bm'
+
+    userkubeconfigs:
+        - '/home/chris/anthos-bm/config_bm'
+
+
+    configyamlfiles:
+        - '/home/chris/anthos-bm/cluster1.yaml'
+
+
+# This section is required.
+# 'partner', 'platform' and 'lbservicevip' are required.
+# under lbservicevip, multiple ip addresses can be given.
+# If 'report' is not given testlog will be saved under the current dir.
+# If 'abortonfailure' is not specified, False is set by default.
+# If 'nginx" is not specified, "nginx:1.7.9" is set by default. If desired, this can be set
+# to nginx image hosted in a private registry.
+# "manuallb" is used for Manual Load-balancer testing. When "manuallb" is used, "lbnodeport" can
+# be used to set node port.
+# "lbcheck" is used to check traffic distribution across all backend nodes. By default, it is
+# set to False. If desired, it can be set to True to enable this check.
+# "logautoupload" is used to automatically upload testlog to Google Cloud Storage. By Default,
+# it is disabled.
+# If desired it can be set to True to enable log auto-upload.
+# email/contact is required.
+test:
+    partner:  "HPE"
+    platform: "HPE Nimble Storage dHCI"
+    lbservicevip: 
+        - "16.78.7.25"
+        - "16.78.7.26"
+    report: '/home/chris/apv-ts'
+    abortonfailure: False
+    nginx: "nginx:1.7.9"
+    manuallb: False
+    lbnodeport: 32676
+    lbcheck: False
+    logautoupload: False
+    contact: "Chris Snell"
+    email: "chris.snell@hpe.com"
+
