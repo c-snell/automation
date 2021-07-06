@@ -1,0 +1,25 @@
+#! ---------------------------------------------------------------------
+#! Settings for creating clusters on vSphere with Tanzu
+#! ---------------------------------------------------------------------
+#! Identifies the storage class to be used for storage of the disks that store the root file systems of the worker nodes.
+CONTROL_PLANE_STORAGE_CLASS: primera-default-profile
+NAMESPACE: virtware-tanzu
+OS_NAME: ubuntu
+#! Specifies the name of the VirtualMachineClass that describes the virtual
+#! hardware settings to be used each control plane node in the pool.
+CONTROL_PLANE_VM_CLASS: best-effort-medium
+#! Specifies a named storage class to be annotated as the default in the
+#! cluster. If you do not specify it, there is no default.
+DEFAULT_STORAGE_CLASS: primera-default-profile
+#! Specifies the service domain for the cluster
+SERVICE_DOMAIN: virtware.io
+#! Specifies named persistent volume (PV) storage classes for container
+#! workloads. Storage classes associated with the Supervisor Namespace are
+#! replicated in the cluster. In other words, each storage class listed must be
+#! available on the Supervisor Namespace for this to be a valid value
+STORAGE_CLASSES: primera-default-profile
+#! Identifies the storage class to be used for storage of the disks that store the root file systems of the worker nodes.
+WORKER_STORAGE_CLASS: primera-default-profile
+#! Specifies the name of the VirtualMachineClass that describes the virtual
+#! hardware settings to be used each worker node in the pool
+WORKER_VM_CLASS: best-effort-medium
