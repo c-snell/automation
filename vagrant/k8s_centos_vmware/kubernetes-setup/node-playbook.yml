@@ -1,0 +1,145 @@
+---
+- hosts: all
+  become: true
+  tasks:
+  - name: Remove docker if installed from CentOS repo
+    yum:
+      name: ['docker', 'docker-client', 'docker-client-latest', 'docker-common', 'docker-latest', 'docker-latest-logrotate', 'docker-logrotate', 'docker-engine']
+      state: removed
+
+  - name: Install yum utils
+    yum:
+      name: ['yum-utils', 'device-mapper-persistent-data', 'lvm2']
+      state: latest
+
+#  - name: Upgrade all packages
+#    yum:
+#      name: '*'
+#      state: latest
+
+  - name: Add Docker repo
+    get_url:
+      url: https://download.docker.com/linux/centos/docker-ce.repo
+      dest: /etc/yum.repos.d/docker-ce.repo
+
+  - name: Install Docker
+    yum:
+      name: docker-ce
+      state: latest
+
+  - name: Start Docker service
+    service:
+      name: docker
+      state: started
+      enabled: yes
+
+  - name: Add vagrant user to docker group
+    user:
+      name: vagrant
+      groups: docker
+      append: yes
+
+  - name: Set selinux policy to permissive
+    selinux:
+      policy: targeted
+      state: permissive
+    when:
+      - ansible_os_family == "RedHat"
+
+  - name: Add br_netfilter in /etc/modules-load.d/
+    copy:
+      dest: /etc/modules-load.d/br_netfilter.conf
+      content: br_netfilter
+
+  - name: Load the br_netfilter module
+    modprobe:
+      name: br_netfilter
+      state: present
+
+  - name: Write bridge-netfilter and ip-forward system variables
+    copy:
+      content: |
+        net.ipv4.ip_forward=1
+        net.bridge.bridge-nf-call-ip6tables=1
+        net.bridge.bridge-nf-call-iptables=1
+      dest: /etc/sysctl.d/k8s.conf
+
+  - name: Enable bridge-netfilter and ip-forward system variables
+    sysctl:
+      name: "{{ item.name }}"
+      value: "{{ item.value }}"
+    with_items:
+      - name: vm.swappiness
+        value: 0
+      - name: net.ipv4.ip_forward
+        value: 1
+      - name: net.bridge.bridge-nf-call-ip6tables
+        value: 1
+      - name: net.bridge.bridge-nf-call-iptables
+        value: 1
+
+  - name: Remove swapfile from /etc/fstab
+    mount:
+      name: "{{ item }}"
+      fstype: swap
+      state: absent
+    with_items:
+      - swap
+      - none
+
+  - name: Disable swap
+    command: swapoff -a
+    when: ansible_swaptotal_mb > 0
+
+  - name: Add Kubernetes yum repository
+    when: ansible_os_family == "RedHat"
+    yum_repository:
+      name: kubernetes
+      description: Kubernetes Repository
+      file: kubernetes
+      baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+      enabled: yes
+      gpgcheck: yes
+      repo_gpgcheck: yes
+      gpgkey: https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+      exclude: kube*
+
+  - name: Install kubernetes packages (RHEL/CentOS)
+    when: ansible_os_family == "RedHat"
+    yum:
+      name:
+        - kubelet
+        - kubeadm
+        - kubectl
+      update_cache: yes
+      disable_excludes: kubernetes
+      state: present
+
+  - name: Enable and check kubelet service
+    when: ansible_os_family == "RedHat"
+    systemd:
+      name: kubelet
+      daemon_reload: yes
+      state: started
+      enabled: yes
+
+#  - name: Configure node ip
+#    lineinfile:
+#      path: /etc/default/kubelet
+#      line: KUBELET_EXTRA_ARGS=--node-ip={{ node_ip }}
+
+#  - name: Restart kubelet
+#    service:
+#      name: kubelet
+#      daemon_reload: yes
+#      state: restarted
+
+  - name: Copy the join command to server location
+    copy: src=join-command dest=/tmp/join-command.sh mode=0777
+
+  - name: Join the node to cluster
+    command: sh /tmp/join-command.sh
+
+  handlers:
+    - name: docker status
+      service: name=docker state=started
