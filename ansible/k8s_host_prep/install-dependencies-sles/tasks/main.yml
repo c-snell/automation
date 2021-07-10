@@ -1,6 +1,6 @@
 ---
 - name: Install the latest updates
-  zypper: 
+  community.general.zypper: 
     name: '*'
     state: latest
   when: ansible_distribution == 'SLES'
