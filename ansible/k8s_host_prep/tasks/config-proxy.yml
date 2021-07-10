@@ -1,0 +1,41 @@
+---
+- name: Insert multiple lines and Backup
+  blockinfile:
+    path: /etc/environment
+    backup: yes
+    block: |
+      export http_proxy="http://16.85.88.10:8080"
+      export https_proxy="http://16.85.88.10:8080"
+      export no_proxy="127.0.0.1,localhost,.cluster.local,.svc,localaddress,10.10.0.0/16,172.17.0.0/16,16.0.0.0/8,192.0.0.0/8"
+
+- name: Insert multiple lines and Backup
+  blockinfile:
+    path: /etc/bashrc
+    backup: yes
+    block: |
+      export http_proxy="http://16.85.88.10:8080"
+      export https_proxy="http://16.85.88.10:8080"
+      export no_proxy="127.0.0.1,localhost,.cluster.local,.svc,localaddress,10.10.0.0/16,172.17.0.0/16,16.0.0.0/8,192.0.0.0/8"
+
+- name: Creating a file with content
+  copy:
+    dest: "/etc/profile.d/proxy.sh"
+    content: |
+      export http_proxy="http://16.85.88.10:8080"
+      export https_proxy="http://16.85.88.10:8080"
+      export no_proxy="127.0.0.1,localhost,.cluster.local,.svc,localaddress,10.10.0.0/16,172.17.0.0/16,16.0.0.0/8,192.0.0.0/8"
+
+- name: Creates directory
+  file:
+    path: /etc/systemd/system/docker.service.d/
+    state: directory
+    recurse: yes
+
+- name: Creating a file with content
+  copy:
+    dest: "/etc/systemd/system/docker.service.d/no_proxy.conf"
+    content: |
+      [Service]
+      Environment="NO_PROXY=127.0.0.1,localhost,.cluster.local,.svc,localaddress,10.10.0.0/16,172.17.0.0/16,16.0.0.0/8,192.0.0.0/8"
+      Environment="HTTP_PROXY=http://16.85.88.10:8080"
+      Environment="HTTPS_PROXY=http://16.85.88.10:8080"
