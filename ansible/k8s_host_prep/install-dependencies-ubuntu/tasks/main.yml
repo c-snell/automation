@@ -1,0 +1,6 @@
+---
+- name: Install the latest updates
+  apt: 
+    name: '*' 
+    state: latest
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
