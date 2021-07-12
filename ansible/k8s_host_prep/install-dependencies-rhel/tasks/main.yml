@@ -13,3 +13,30 @@
     packages:
     - podman
     - buildah
+
+- name: Add Docker repository
+  yum_repository:
+    name: docker
+    description: Docker repo
+    baseurl: https://download.docker.com/linux/centos/docker-ce.repo
+
+- name: Install packages
+  yum:
+    name: "{{ packages }}"
+    state: latest
+  vars:
+    packages:
+    - yum-utils
+    - device-mapper-persistent-data
+    - lvm2
+    - docker-ce
+    - docker-ce-cli
+    - containerd.io
+
+- name: Enable service docker
+  ansible.builtin.service:
+    name: docker
+    enabled: yes
+    state: started
+
+
